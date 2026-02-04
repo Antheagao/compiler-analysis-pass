@@ -1,16 +1,20 @@
 //=============================================================================
 // FILE:
-//    HelloWorld.cpp
+//    LivenessAnalysis.cpp
 //
 // DESCRIPTION:
-//    Visits all functions in a module, prints their names and the number of
-//    arguments via stderr. Strictly speaking, this is an analysis pass (i.e.
-//    the functions are not modified). However, in order to keep things simple
-//    there's no 'print' method here (every analysis pass should implement it).
+//    An LLVM analysis pass that performs liveness analysis on functions.
+//    For each basic block, it computes:
+//    - UEVAR: upward-exposed variables (used before killed)
+//    - VARKILL: variables killed (defined) in the block
+//    - LIVEIN: variables live at the entry of the block
+//    - LIVEOUT: variables live at the exit of the block
+//
+//    The pass uses an iterative algorithm to handle back edges and loops.
 //
 // USAGE:
 //    New PM
-//      opt -load-pass-plugin=libHelloWorld.dylib -passes="hello-world" `\`
+//      opt -load-pass-plugin=libLivenessAnalysis.dylib -passes="liveness-analysis" `\`
 //        -disable-output <input-llvm-file>
 //
 //
@@ -28,7 +32,7 @@
 using namespace llvm;
 
 //-----------------------------------------------------------------------------
-// HelloWorld implementation
+// LivenessAnalysis implementation
 //-----------------------------------------------------------------------------
 // No need to expose the internals of the pass to the outside world - keep
 // everything in an anonymous namespace.
@@ -75,7 +79,7 @@ void setDifference(std::set<Value*>& s1, std::set<Value*>& s2) {
       - the operators in assignments only include +, -, *, /
       - the IR may include comparing and branching instructions, 
         like icmp and br, which may
-        also ``use’’ variables (and ``define’’ variables)
+        also ``use'' variables (and ``define'' variables)
 */
 void visitor(Function &fn) {
   // Declare variables
@@ -166,7 +170,7 @@ void visitor(Function &fn) {
 }
 
 // New PM implementation
-struct HelloWorld : PassInfoMixin<HelloWorld> {
+struct LivenessAnalysis : PassInfoMixin<LivenessAnalysis> {
   // Main entry point, takes IR unit to run the pass on (&F) and the
   // corresponding pass manager (to be queried if need be)
   PreservedAnalyses run(Function &F, FunctionAnalysisManager &) {
@@ -184,14 +188,14 @@ struct HelloWorld : PassInfoMixin<HelloWorld> {
 //-----------------------------------------------------------------------------
 // New PM Registration
 //-----------------------------------------------------------------------------
-llvm::PassPluginLibraryInfo getHelloWorldPluginInfo() {
-  return {LLVM_PLUGIN_API_VERSION, "HelloWorld", LLVM_VERSION_STRING,
+llvm::PassPluginLibraryInfo getLivenessAnalysisPluginInfo() {
+  return {LLVM_PLUGIN_API_VERSION, "LivenessAnalysis", LLVM_VERSION_STRING,
           [](PassBuilder &PB) {
             PB.registerPipelineParsingCallback(
                 [](StringRef Name, FunctionPassManager &FPM,
                    ArrayRef<PassBuilder::PipelineElement>) {
-                  if (Name == "hello-world") {
-                    FPM.addPass(HelloWorld());
+                  if (Name == "liveness-analysis") {
+                    FPM.addPass(LivenessAnalysis());
                     return true;
                   }
                   return false;
@@ -200,9 +204,9 @@ llvm::PassPluginLibraryInfo getHelloWorldPluginInfo() {
 }
 
 // This is the core interface for pass plugins. It guarantees that 'opt' will
-// be able to recognize HelloWorld when added to the pass pipeline on the
-// command line, i.e. via '-passes=hello-world'
+// be able to recognize LivenessAnalysis when added to the pass pipeline on the
+// command line, i.e. via '-passes=liveness-analysis'
 extern "C" LLVM_ATTRIBUTE_WEAK ::llvm::PassPluginLibraryInfo
 llvmGetPassPluginInfo() {
-  return getHelloWorldPluginInfo();
+  return getLivenessAnalysisPluginInfo();
 }

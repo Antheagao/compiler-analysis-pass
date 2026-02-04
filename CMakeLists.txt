@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(llvm-tutor-hello-world)
+project(liveness-analysis)
 
 #===============================================================================
 # 1. LOAD LLVM CONFIGURATION
@@ -16,11 +16,11 @@ if("${LLVM_VERSION_MAJOR}" VERSION_LESS 17)
   message(FATAL_ERROR "Found LLVM ${LLVM_VERSION_MAJOR}, but need LLVM 17 or above")
 endif()
 
-# HelloWorld includes headers from LLVM - update the include paths accordingly
+# LivenessAnalysis includes headers from LLVM - update the include paths accordingly
 include_directories(SYSTEM ${LLVM_INCLUDE_DIRS})
 
 #===============================================================================
-# 2. LLVM-TUTOR BUILD CONFIGURATION
+# 2. BUILD CONFIGURATION
 #===============================================================================
 # Use the same C++ standard as LLVM does
 set(CMAKE_CXX_STANDARD 17 CACHE STRING "")
@@ -33,9 +33,9 @@ endif()
 #===============================================================================
 # 3. ADD THE TARGET
 #===============================================================================
-add_library(HelloWorld SHARED HelloWorld.cpp)
+add_library(LivenessAnalysis SHARED src/LivenessAnalysis.cpp)
 
 # Allow undefined symbols in shared objects on Darwin (this is the default
 # behaviour on Linux)
-target_link_libraries(HelloWorld
+target_link_libraries(LivenessAnalysis
   "$<$<PLATFORM_ID:Darwin>:-undefined dynamic_lookup>")

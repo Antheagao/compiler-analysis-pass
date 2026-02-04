@@ -1,0 +1,36 @@
+# Build directories
+build/
+cmake-build-*/
+
+# CMake cache
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+
+# Compiled binaries
+*.so
+*.dylib
+*.dll
+*.a
+*.o
+*.obj
+
+# LLVM IR files (keep source .c files, ignore generated .ll files if desired)
+# Uncomment the next line if you don't want to track generated .ll files
+# *.ll
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.log
