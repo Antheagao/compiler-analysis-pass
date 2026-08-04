@@ -1,5 +1,7 @@
 # LLVM Liveness Analysis Pass
 
+[![CI](https://github.com/Antheagao/compiler-analysis-pass/actions/workflows/ci.yml/badge.svg)](https://github.com/Antheagao/compiler-analysis-pass/actions/workflows/ci.yml)
+
 An LLVM compiler analysis pass that performs liveness analysis on functions. This pass computes liveness information for each basic block in a function's control flow graph (CFG), identifying which variables are live at different points in the program.
 
 ## Overview
@@ -98,7 +100,10 @@ opt -load-pass-plugin=./build/lib/libLivenessAnalysis.so \
 
 ## Running Tests
 
-The repository includes test cases in the `tests/` directory. To run all tests:
+The repository includes golden-file regression tests in the `tests/` directory: each
+committed `.ll` input has a committed expected output in `tests/expected/`, and the
+suite diffs the pass's actual output against it — any mismatch fails the run with a
+nonzero exit code (this is what CI runs on every push).
 
 ```bash
 cd tests
@@ -106,10 +111,23 @@ chmod +x run_tests.sh
 ./run_tests.sh
 ```
 
-The test script will:
-1. Compile all test C files to LLVM IR
-2. Run the liveness analysis pass on each test file
-3. Display the results
+If your `opt` binary isn't on `PATH` under that name, point at it explicitly:
+
+```bash
+OPT=/usr/lib/llvm-17/bin/opt ./run_tests.sh
+```
+
+Development flags:
+
+- `./run_tests.sh --bless` — overwrite the expected outputs with the current pass
+  output (after an intentional output change)
+- `./run_tests.sh --regen-ir` — recompile the `.ll` inputs from the `.c` sources
+  (a different clang version may change block/value names, so a `--bless` usually
+  follows)
+
+The pass prints each set's variables sorted by name, so the output is deterministic
+across runs, platforms, and LLVM versions — that's what makes byte-exact golden
+files viable.
 
 ### Test Cases
 
@@ -122,20 +140,19 @@ The test script will:
 
 ```
 compiler-analysis-pass/
-├── CMakeLists.txt          # Build configuration
-├── README.md               # This file
+├── .github/workflows/ci.yml # Build + golden-file tests on every push
+├── CMakeLists.txt           # Build configuration
+├── LICENSE                  # MIT
+├── README.md                # This file
 ├── src/
 │   └── LivenessAnalysis.cpp # Main pass implementation
 └── tests/
-    ├── run_tests.sh        # Test runner script
-    ├── test1.c             # Test case 1
-    ├── test1.ll            # LLVM IR for test1
-    ├── test2.c             # Test case 2
-    ├── test2.ll            # LLVM IR for test2
-    ├── test3.c             # Test case 3
-    ├── test3.ll            # LLVM IR for test3
-    ├── test4.c             # Test case 4
-    └── test4.ll            # LLVM IR for test4
+    ├── run_tests.sh         # Golden-file test runner (nonzero exit on failure)
+    ├── expected/            # Committed expected outputs (one per test)
+    ├── test1.c / test1.ll   # Simple if/else branching
+    ├── test2.c / test2.ll   # Do-while loop with nested if/else
+    ├── test3.c / test3.ll   # For loop with conditional branching
+    └── test4.c / test4.ll   # Nested loops (for and while)
 ```
 
 ## Algorithm
