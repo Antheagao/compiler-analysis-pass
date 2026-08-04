@@ -25,9 +25,12 @@
 #include "llvm/Passes/PassPlugin.h"
 #include "llvm/Support/raw_ostream.h"
 
+#include <algorithm>
 #include <deque>
 #include <set>
 #include <map>
+#include <string>
+#include <vector>
 
 using namespace llvm;
 
@@ -63,6 +66,26 @@ void setDifference(std::set<Value*>& s1, std::set<Value*>& s2) {
   for (Value* v : s2) {
     s1.erase(v);
   }
+}
+
+// Print function to display a summary set in a stable order.
+// The sets are keyed by Value* (heap addresses), so iterating them directly
+// prints in allocator order -- which is not guaranteed to be the same across
+// runs, platforms, or LLVM versions. Sorting by name makes the output
+// deterministic, which the golden-file tests in tests/ rely on.
+void printSet(const char* label, std::set<Value*>& s) {
+  std::vector<std::string> names;
+  for (Value* v : s) {
+    if (v->hasName()) {
+      names.push_back(v->getName().str());
+    }
+  }
+  std::sort(names.begin(), names.end());
+  errs() << label << ": ";
+  for (std::string& name : names) {
+    errs() << name << " ";
+  }
+  errs() << "\n";
 }
 
 /*
@@ -145,27 +168,9 @@ void visitor(Function &fn) {
   // Display the summary sets and liveOut for each basic block
   for (BasicBlock& block : fn) {
     errs() << "----- " << block.getName() << " -----\n";
-    errs() << "UEVAR: ";
-    for (Value* v : blockInfo[&block].ueVar) {
-      if (v->hasName()) {
-        errs() << v->getName() << " ";
-      }
-    }
-    errs() << "\n";
-    errs() << "VARKILL: ";
-    for (Value* v : blockInfo[&block].varKill) {
-      if (v->hasName()) {
-        errs() << v->getName() << " ";
-      }
-    }
-    errs() << "\n";
-    errs() << "LIVEOUT: ";
-    for (Value* v : blockInfo[&block].liveOut) {
-      if (v->hasName()) {
-        errs() << v->getName() << " ";
-      }
-    }
-    errs() << "\n";
+    printSet("UEVAR", blockInfo[&block].ueVar);
+    printSet("VARKILL", blockInfo[&block].varKill);
+    printSet("LIVEOUT", blockInfo[&block].liveOut);
   }
 }
 
