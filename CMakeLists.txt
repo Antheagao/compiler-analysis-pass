@@ -35,6 +35,13 @@ endif()
 #===============================================================================
 add_library(LivenessAnalysis SHARED src/LivenessAnalysis.cpp)
 
+# Place the plugin in build/lib/ -- README and tests/run_tests.sh both load it
+# from there (without this, CMake drops it in the build root and the documented
+# opt -load-pass-plugin path does not exist).
+set_target_properties(LivenessAnalysis PROPERTIES
+  LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+  RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
+
 # Allow undefined symbols in shared objects on Darwin (this is the default
 # behaviour on Linux)
 target_link_libraries(LivenessAnalysis
