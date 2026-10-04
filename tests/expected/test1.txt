@@ -1,16 +1,20 @@
 ----- entry -----
 UEVAR: b c 
 VARKILL: e 
+LIVEIN: a b c 
 LIVEOUT: a b c e 
 ----- if.then -----
 UEVAR: a 
 VARKILL: e 
+LIVEIN: a c 
 LIVEOUT: c e 
 ----- if.else -----
 UEVAR: b c 
 VARKILL: a 
+LIVEIN: b c e 
 LIVEOUT: c e 
 ----- if.end -----
 UEVAR: c e 
 VARKILL: a 
+LIVEIN: c e 
 LIVEOUT: 

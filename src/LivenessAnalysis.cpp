@@ -165,11 +165,12 @@ void visitor(Function &fn) {
     }
   }
 
-  // Display the summary sets and liveOut for each basic block
+  // Display the summary sets and liveness results for each basic block
   for (BasicBlock& block : fn) {
     errs() << "----- " << block.getName() << " -----\n";
     printSet("UEVAR", blockInfo[&block].ueVar);
     printSet("VARKILL", blockInfo[&block].varKill);
+    printSet("LIVEIN", blockInfo[&block].liveIn);
     printSet("LIVEOUT", blockInfo[&block].liveOut);
   }
 }

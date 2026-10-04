@@ -90,10 +90,12 @@ opt -load-pass-plugin=./build/lib/libLivenessAnalysis.so \
    ----- entry -----
    UEVAR: a b c 
    VARKILL: e 
+   LIVEIN: a b c 
    LIVEOUT: a c e 
    ----- if.then -----
    UEVAR: a 
    VARKILL: e 
+   LIVEIN: a c 
    LIVEOUT: a c e 
    ...
    ```

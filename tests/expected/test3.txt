@@ -1,32 +1,40 @@
 ----- entry -----
 UEVAR: 
 VARKILL: a b i 
+LIVEIN: c d e 
 LIVEOUT: a b c d e i 
 ----- for.cond -----
 UEVAR: i 
 VARKILL: 
+LIVEIN: a b c d e i 
 LIVEOUT: a b c d e i 
 ----- for.body -----
 UEVAR: a d 
 VARKILL: c e 
+LIVEIN: a b d i 
 LIVEOUT: a b c d e i 
 ----- for.inc -----
 UEVAR: i 
 VARKILL: i 
+LIVEIN: a b c d e i 
 LIVEOUT: a b c d e i 
 ----- for.end -----
 UEVAR: d e 
 VARKILL: 
+LIVEIN: b c d e 
 LIVEOUT: b c d e 
 ----- if.then -----
 UEVAR: c d 
 VARKILL: f 
+LIVEIN: c d 
 LIVEOUT: 
 ----- if.else -----
 UEVAR: b e 
 VARKILL: e 
+LIVEIN: b e 
 LIVEOUT: 
 ----- if.end -----
 UEVAR: 
 VARKILL: 
+LIVEIN: 
 LIVEOUT: 
